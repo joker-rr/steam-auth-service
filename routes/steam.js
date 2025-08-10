@@ -33,7 +33,7 @@ router.post('/verify-openid',
 );
 // Steam登录回调验证
 // GET /api/steam/verify?token=xxx&redirect=/&tab=preferences&openid.*=...
-router.get('/user-info',
+router.post('/user-info',
     asyncHandler(steamController.getSteamUserInfo.bind(steamController))
 );
 
