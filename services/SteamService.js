@@ -167,17 +167,6 @@ class SteamService {
                 redirected: response.redirected
             });
 
-            // 检查响应状态
-            if (!response.ok) {
-                logger.error('❌ Steam个人资料页面响应错误', {
-                    requestId,
-                    steamId,
-                    status: response.status,
-                    statusText: response.statusText,
-                    url: profileUrl
-                });
-                throw new Error(`HTTP ${response.status}: ${response.statusText}`);
-            }
 
             // 获取响应文本
             logger.debug('📄 开始解析响应文本', {

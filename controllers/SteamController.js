@@ -338,14 +338,7 @@ class SteamController {
                 }
             });
 
-            if (!response.ok) {
-                logger.warn('⚠️ 国内服务器返回错误状态', {
-                    requestId,
-                    status: response.status,
-                    statusText: response.statusText,
-                    url: domesticApiUrl
-                });
-            }
+
 
             const result = await response.json();
 
