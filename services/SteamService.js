@@ -176,17 +176,6 @@ class SteamService {
 
             const htmlContent = await response.text();
 
-            logger.info('📄 获取到HTML内容', {
-                requestId,
-                steamId,
-                contentLength: htmlContent.length,
-                contentPreview: htmlContent.substring(0, 200).replace(/\s+/g, ' '),
-                hasActualPersonaName: htmlContent.includes('actual_persona_name'),
-                hasPlayerAvatar: htmlContent.includes('playerAvatarAutoSizeInner'),
-                hasPrivateProfile: htmlContent.includes('private profile') || htmlContent.includes('This profile is private'),
-                hasProfileNotFound: htmlContent.includes('profile could not be found') || htmlContent.includes('404')
-            });
-
             // 使用cheerio解析HTML
             logger.debug('🔍 开始使用cheerio解析HTML', {
                 requestId,
