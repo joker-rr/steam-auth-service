@@ -31,7 +31,7 @@ class SteamService {
             openidURL.searchParams.set('openid.claimed_id', 'http://specs.openid.net/auth/2.0/identifier_select');
             openidURL.searchParams.set('openid.identity', 'http://specs.openid.net/auth/2.0/identifier_select');
             openidURL.searchParams.set('openid.return_to', returnTo.toString());
-            openidURL.searchParams.set('openid.realm', process.env.DOMESTIC_SERVER);
+            openidURL.searchParams.set('openid.realm', baseURL);
 
             return openidURL.toString();
         } catch (error) {
