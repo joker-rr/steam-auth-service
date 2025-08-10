@@ -108,12 +108,35 @@ class SteamService {
      */
 
     async getUserInfo(steamId) {
-        try {
+        const requestId = `getUserInfo_${Date.now()}_${Math.random().toString(36).substr(2, 6)}`;
 
+        logger.info('👤 开始获取Steam用户信息', {
+            requestId,
+            steamId,
+            timestamp: new Date().toISOString()
+        });
+
+        try {
             // 构建Steam个人资料URL
             const profileUrl = `${this.steamProfileUrl}${steamId}`;
 
+            logger.info('🔗 构建Steam个人资料URL', {
+                requestId,
+                steamId,
+                profileUrl,
+                baseUrl: this.steamProfileUrl
+            });
+
             // 请求Steam个人资料页面
+            logger.info('📤 发送请求到Steam个人资料页面', {
+                requestId,
+                url: profileUrl,
+                headers: {
+                    userAgent: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
+                }
+            });
+
+            const startTime = Date.now();
             const response = await fetch(profileUrl, {
                 headers: {
                     'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36',
@@ -126,13 +149,143 @@ class SteamService {
                 },
                 timeout: 10000
             });
+            const endTime = Date.now();
 
-            const $ = cheerio.load(response.data);
-            const nickname = $('.actual_persona_name').text().trim();
-            const avatar = $('.playerAvatarAutoSizeInner img').attr('src');
+            logger.info('📨 收到Steam个人资料页面响应', {
+                requestId,
+                steamId,
+                status: response.status,
+                statusText: response.statusText,
+                responseTime: `${endTime - startTime}ms`,
+                headers: {
+                    contentType: response.headers.get('content-type'),
+                    contentLength: response.headers.get('content-length'),
+                    server: response.headers.get('server'),
+                    setCookie: !!response.headers.get('set-cookie')
+                },
+                url: response.url,
+                redirected: response.redirected
+            });
 
+            // 检查响应状态
+            if (!response.ok) {
+                logger.error('❌ Steam个人资料页面响应错误', {
+                    requestId,
+                    steamId,
+                    status: response.status,
+                    statusText: response.statusText,
+                    url: profileUrl
+                });
+                throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+            }
+
+            // 获取响应文本
+            logger.debug('📄 开始解析响应文本', {
+                requestId,
+                steamId
+            });
+
+            const htmlContent = await response.text();
+
+            logger.info('📄 获取到HTML内容', {
+                requestId,
+                steamId,
+                contentLength: htmlContent.length,
+                contentPreview: htmlContent.substring(0, 200).replace(/\s+/g, ' '),
+                hasActualPersonaName: htmlContent.includes('actual_persona_name'),
+                hasPlayerAvatar: htmlContent.includes('playerAvatarAutoSizeInner'),
+                hasPrivateProfile: htmlContent.includes('private profile') || htmlContent.includes('This profile is private'),
+                hasProfileNotFound: htmlContent.includes('profile could not be found') || htmlContent.includes('404')
+            });
+
+            // 使用cheerio解析HTML
+            logger.debug('🔍 开始使用cheerio解析HTML', {
+                requestId,
+                steamId
+            });
+
+            const $ = cheerio.load(htmlContent);
+
+            // 查找昵称
+            const nicknameElement = $('.actual_persona_name');
+            const nickname = nicknameElement.text().trim();
+
+            logger.info('👤 解析用户昵称', {
+                requestId,
+                steamId,
+                nicknameFound: !!nickname,
+                nickname,
+                nicknameLength: nickname.length,
+                elementExists: nicknameElement.length > 0,
+                elementHtml: nicknameElement.html(),
+                // 尝试其他可能的选择器
+                alternativeSelectors: {
+                    personaName: $('.persona_name').text().trim(),
+                    profileHeader: $('.profile_header .actual_persona_name').text().trim(),
+                    playerName: $('.player_name').text().trim()
+                }
+            });
+
+            // 查找头像
+            const avatarElement = $('.playerAvatarAutoSizeInner img');
+            const avatar = avatarElement.attr('src');
+
+            logger.info('🖼️ 解析用户头像', {
+                requestId,
+                steamId,
+                avatarFound: !!avatar,
+                avatar,
+                elementExists: avatarElement.length > 0,
+                elementAttributes: {
+                    src: avatarElement.attr('src'),
+                    alt: avatarElement.attr('alt'),
+                    class: avatarElement.attr('class')
+                },
+                // 尝试其他可能的选择器
+                alternativeSelectors: {
+                    avatarImg: $('.profile_avatar img').attr('src'),
+                    playerAvatar: $('.player_avatar img').attr('src'),
+                    avatarMedium: $('.avatar_medium img').attr('src')
+                }
+            });
+
+            // 检查是否获取到必要信息
             if (!nickname || !avatar) {
-                throw new Error('未能从页面中提取昵称或头像');
+                logger.warn('⚠️ 未能从页面中提取完整信息', {
+                    requestId,
+                    steamId,
+                    hasNickname: !!nickname,
+                    hasAvatar: !!avatar,
+                    nickname,
+                    avatar,
+                    // 页面可能的问题
+                    possibleIssues: {
+                        isPrivateProfile: htmlContent.includes('private') || htmlContent.includes('Private'),
+                        isProfileNotFound: htmlContent.includes('404') || htmlContent.includes('not found'),
+                        isBlocked: htmlContent.includes('blocked') || htmlContent.includes('unavailable'),
+                        pageStructureChanged: !htmlContent.includes('actual_persona_name')
+                    }
+                });
+
+                // 尝试备用解析方法
+                const alternativeNickname = $('.persona_name').text().trim() ||
+                    $('.profile_header .actual_persona_name').text().trim() ||
+                    $('.player_name').text().trim();
+
+                const alternativeAvatar = $('.profile_avatar img').attr('src') ||
+                    $('.player_avatar img').attr('src') ||
+                    $('.avatar_medium img').attr('src');
+
+                if (alternativeNickname || alternativeAvatar) {
+                    logger.info('🔄 使用备用解析方法', {
+                        requestId,
+                        steamId,
+                        alternativeNickname,
+                        alternativeAvatar
+                    });
+                }
+
+                throw new Error(`未能从页面中提取${!nickname ? '昵称' : ''}${!nickname && !avatar ? '和' : ''}${!avatar ? '头像' : ''}`);
             }
 
             // 解析Steam页面获取用户信息
@@ -140,16 +293,37 @@ class SteamService {
                 steamId: steamId,
                 nickname: nickname,
                 avatar: avatar,
-            }
+            };
+
+            logger.info('✅ Steam用户信息获取成功', {
+                requestId,
+                steamId,
+                userInfo: {
+                    steamId: userInfo.steamId,
+                    nickname: userInfo.nickname,
+                    avatarUrl: userInfo.avatar.substring(0, 50) + '...',
+                    nicknameLength: userInfo.nickname.length,
+                    avatarDomain: new URL(userInfo.avatar).hostname
+                },
+                totalTime: `${Date.now() - startTime}ms`
+            });
 
             return userInfo;
 
         } catch (error) {
-            logger.error('获取Steam用户信息失败', { error: error.message, steamId });
-            throw new Error('获取Steam用户信息失败');
+            logger.error('💥 获取Steam用户信息失败', {
+                requestId,
+                steamId,
+                error: error.message,
+                stack: error.stack,
+                errorType: error.name,
+                isNetworkError: error.code === 'ECONNREFUSED' || error.code === 'ETIMEDOUT',
+                isTimeoutError: error.name === 'AbortError' || error.message.includes('timeout'),
+                isFetchError: error.name === 'TypeError' && error.message.includes('fetch')
+            });
+            throw new Error('获取Steam用户信息失败: ' + error.message);
         }
     }
-
 
 
     /**
