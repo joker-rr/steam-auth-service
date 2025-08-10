@@ -171,11 +171,22 @@ class SteamService {
 
 
 
+            // 获取响应文本 - 修复
+            const htmlContent = await response.text();  // ✅ 修复：使用response.text()
 
+            logger.info('📄 获取到HTML内容', {
+                requestId,
+                steamId,
+                contentLength: htmlContent.length,
+                contentPreview: htmlContent.substring(0, 200).replace(/\s+/g, ' '),
+                hasActualPersonaName: htmlContent.includes('actual_persona_name'),
+                hasPlayerAvatar: htmlContent.includes('playerAvatarAutoSizeInner'),
+                hasPrivateProfile: htmlContent.includes('private profile') || htmlContent.includes('This profile is private'),
+                hasProfileNotFound: htmlContent.includes('profile could not be found') || htmlContent.includes('404')
+            });
 
-
-
-            const $ = cheerio.load(response.data);
+            // 使用cheerio解析HTML - 修复
+            const $ = cheerio.load(htmlContent);  // ✅ 修复：使用htmlContent
             // 查找昵称
             const nicknameElement = $('.actual_persona_name');
             const nickname = nicknameElement.text().trim();
