@@ -1,4 +1,5 @@
 const logger = require('../utils/logger');
+const cheerio = require('cheerio');
 
 class SteamService {
     constructor() {
@@ -168,22 +169,13 @@ class SteamService {
             });
 
 
-            // 获取响应文本
-            logger.debug('📄 开始解析响应文本', {
-                requestId,
-                steamId
-            });
 
-            const htmlContent = await response.text();
 
-            // 使用cheerio解析HTML
-            logger.debug('🔍 开始使用cheerio解析HTML', {
-                requestId,
-                steamId
-            });
 
-            const $ = cheerio.load(htmlContent);
 
+
+
+            const $ = cheerio.load(response.data);
             // 查找昵称
             const nicknameElement = $('.actual_persona_name');
             const nickname = nicknameElement.text().trim();
