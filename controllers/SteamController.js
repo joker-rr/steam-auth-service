@@ -6,6 +6,53 @@ class SteamController {
     constructor() {
         this.steamService = new SteamService();
     }
+    // 海外服务器 - 提供Steam验证接口
+    async verifyOpenid(req, res) {
+        try {
+            const { openidParams } = req.body;
+
+            const isValid = await this.steamService.verifyOpenId(openidParams);
+
+            res.json({
+                success: true,
+                isValid: isValid
+            });
+        } catch (error) {
+            res.json({
+                success: false,
+                error: error.message
+            });
+        }
+
+    }
+
+
+    async getSteamUserInfo(req, res) {
+
+        try {
+            const { steamId, userAgent } = req.body;
+
+            const userInfo = await this.steamService.getUserInfo(steamId, userAgent);
+
+            res.json({
+                success: true,
+                userInfo: userInfo
+            });
+        } catch (error) {
+            res.json({
+                success: false,
+                error: error.message
+            });
+        }
+
+
+    }
+
+
+
+
+
+
 
     /**
      * Steam登录认证入口

@@ -26,6 +26,18 @@ router.get('/verify',
 );
 
 
+// Steam登录回调验证是否正确
+// 
+router.post('/verify-openid',
+    asyncHandler(steamController.verifyOpenid.bind(steamController))
+);
+// Steam登录回调验证
+// GET /api/steam/verify?token=xxx&redirect=/&tab=preferences&openid.*=...
+router.get('/user-info',
+    asyncHandler(steamController.getSteamUserInfo.bind(steamController))
+);
+
+
 
 
 module.exports = router;
