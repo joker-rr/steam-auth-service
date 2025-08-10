@@ -2,7 +2,7 @@ const express = require('express');
 const SteamController = require('../controllers/SteamController');
 const { asyncHandler } = require('../middleware/errorHandler');
 const { rateLimiters } = require('../middleware/rateLimiter');
-const { apiKeyAuth, optionalApiKeyAuth } = require('../middleware/auth');
+
 
 const router = express.Router();
 const steamController = new SteamController();

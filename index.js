@@ -84,7 +84,7 @@ const redis = new Redis({
 
 ////////////////////////////////////
 const createAuthRoutes = require('./routes/auth');
-const createSteamRoutes = require('./routes/Steam.js');
+// const createSteamRoutes = require('./routes/Steam.js');
 const createPlantFormApiRoutes = require('./routes/plantFormApi');
 const createplantFormRoutes = require('./routes/plantFormRoutes');
 const createPlantFormSellHistoryRoutes = require('./routes/plantFormSellHistoryRoutes')
@@ -141,17 +141,10 @@ async function initTranslationService() {
 
 
 
-app.get('/api/steam/callback', async (req, res) => {
+app.post('/api/steam/callback', async (req, res) => {
   try {
-    const { token, steamId, success, redirect, tab } = req.query;
+    const { token, steamId, success, redirect, tab, steamUser } = req.body;
 
-    console.log('📥 接收海外认证结果:', {
-      token: token ? token.substring(0, 10) + '...' : 'missing',
-      steamId,
-      success,
-      redirect,
-      tab
-    });
 
     if (success && steamId) {
       // 🎉 认证成功处理
@@ -163,23 +156,30 @@ app.get('/api/steam/callback', async (req, res) => {
       // 3. 保存到数据库
       // 4. 更新用户会话
 
+
+
+      const frontendUrl = process.env.FRONTEND_URL;
+      const redirectPath = redirect || '/';
+      const tabParam = tab || 'preferences';
       // 暂时直接重定向到成功页面
-      const redirectUrl = redirect || '/dashboard';
-      const finalUrl = `${redirectUrl}?steamBound=1&tab=${tab || 'preferences'}`;
+      const steamSave = {
+        success: true,
+        redirectUrl: `${frontendUrl}${redirectPath}?showSetting=1&tab=${tabParam}&steamBound=1`
+      }
 
-      console.log('🔄 跳转到成功页面:', finalUrl);
-      res.redirect(finalUrl);
-
+      return res.json(steamSave);
     } else {
       // ❌ 认证失败处理
       console.log('❌ Steam认证失败');
 
-      const redirectUrl = redirect || '/dashboard';
-      const errorMsg = encodeURIComponent('Steam认证失败，请重试');
-      const finalUrl = `${redirectUrl}?error=${errorMsg}&tab=${tab || 'preferences'}`;
 
       console.log('🔄 跳转到错误页面:', finalUrl);
-      res.redirect(finalUrl);
+      const steamSave = {
+        success: false,
+        errorCode: 'also_steamid',
+        message: 'SteamID 已经被绑定',
+      }
+      return res.json(steamSave);
     }
 
   } catch (error) {
@@ -189,7 +189,8 @@ app.get('/api/steam/callback', async (req, res) => {
     const errorMsg = encodeURIComponent('系统错误，请重试');
     const finalUrl = `${redirectUrl}?error=${errorMsg}`;
 
-    res.redirect(finalUrl);
+    // res.redirect(finalUrl);
+    return finalUrl
   }
 });
 
