@@ -16,4 +16,4 @@ const steamInfoApi = {
 
 
 
-module.exports = steamInfoApi;
+module.exports = { steamInfoApi };
