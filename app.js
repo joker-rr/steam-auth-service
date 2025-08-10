@@ -10,16 +10,8 @@ const steamRoutes = require('./routes/steam');
 
 const app = express();
 
-// 请求日志中间件
-app.use((req, res, next) => {
-    logger.info('Request received', {
-        method: req.method,
-        url: req.originalUrl,
-        ip: req.ip || req.connection.remoteAddress,
-        userAgent: req.get('User-Agent')
-    });
-    next();
-});
+
+
 
 // CORS配置
 app.use(cors({
