@@ -128,17 +128,14 @@ class SteamService {
                 timeout: 10000
             });
 
-            console.log('✅ 有回应', response);
 
             // 获取响应文本 - 修复
             const htmlContent = await response.text();  // ✅ 修复：使用response.text()
 
-            console.log('✅ 有回应 文本', htmlContent);
 
             // 使用cheerio解析HTML - 修复
             const $ = cheerio.load(htmlContent);  // ✅ 修复：使用htmlContent
 
-            console.log('✅ ￥￥￥￥￥￥$$$$$$$$$', $);
             // 查找昵称
             const nicknameElement = $('.actual_persona_name');
             const nickname = nicknameElement.text().trim();

@@ -1,8 +1,15 @@
+
+
+console.log = () => { }    // 禁用所有console.log
+console.warn = () => { }   // 禁用所有console.warn
+
 require('dotenv').config();
 const app = require('./app');
 const logger = require('./utils/logger');
 
 const PORT = process.env.PORT || 3001;
+
+
 
 // 启动服务器
 const server = app.listen(PORT, () => {
