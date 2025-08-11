@@ -50,7 +50,26 @@ class SteamController {
 
 
 
+    async getSteamItemInfo(req, res) {
 
+        try {
+            const { classid, instanceid } = req.query;
+
+            const item = await this.steamService.fetchItemFromSteamAPI(classid, instanceid);
+
+            res.json({
+                success: true,
+                item: item
+            });
+        } catch (error) {
+            res.json({
+                success: false,
+                error: error.message
+            });
+        }
+
+
+    }
 
 
 

@@ -32,10 +32,16 @@ router.post('/verify-openid',
     asyncHandler(steamController.verifyOpenid.bind(steamController))
 );
 // Steam登录回调验证
-// GET /api/steam/verify?token=xxx&redirect=/&tab=preferences&openid.*=...
+// 
 router.post('/user-info',
     asyncHandler(steamController.getSteamUserInfo.bind(steamController))
 );
+
+// GET /api/steam/steamItem
+router.get('/steamItem',
+    asyncHandler(steamController.getSteamItemInfo.bind(steamController))
+);
+
 
 
 

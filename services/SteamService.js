@@ -159,6 +159,61 @@ class SteamService {
     }
 
 
+
+    /**
+     * 获取SteamItem信息
+     * @param {string} classid - classid
+     * @param {string} instanceid - instanceid
+     * @returns {Promise<Object>} item信息
+     */
+    async fetchItemFromSteamAPI(classid, instanceid) {
+        const url = 'https://api.steampowered.com/ISteamEconomy/GetAssetClassInfo/v1/';
+
+        // 构建URL参数
+        const params = new URLSearchParams({
+            key: this.STEAM_API_KEY,
+            appid: 730,
+            class_count: 1,
+            [`classid0`]: classid,
+            [`instanceid0`]: instanceid
+        });
+
+        const fullUrl = `${url}?${params.toString()}`;
+
+        try {
+            const response = await fetch(fullUrl, {
+                method: 'GET',
+                headers: {
+                    'User-Agent': 'SteamAPI/1.0',
+                    'Accept': 'application/json',
+                },
+                timeout: 10000
+            });
+
+            if (!response.ok) {
+                throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+            }
+
+            const data = await response.json();
+
+            const key = instanceid === "0" || instanceid === 0
+                ? `${classid}`
+                : `${classid}_${instanceid}`;
+
+            const item = data?.result?.[key];
+
+            if (!item) {
+                throw new Error('未找到该物品');
+            }
+
+            return item;
+
+        } catch (error) {
+            console.error('Steam API 调用失败：', error.message);
+            throw error;
+        }
+    }
+
     /**
      * 验证API密钥
      * @param {string} apiKey - API密钥
