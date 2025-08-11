@@ -1,5 +1,7 @@
 const logger = require('../utils/logger');
 const { ApiResponse } = require('../utils/response');
+const crypto = require('crypto');
+
 
 /**
  * API Key认证中间件
