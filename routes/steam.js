@@ -39,7 +39,7 @@ router.post('/user-info',
 );
 
 // GET /api/steam/steamItem
-router.get('/steamItem',
+router.post('/steamItem',
     verifyHMACSignature,
     asyncHandler(steamController.getSteamItemInfo.bind(steamController))
 );

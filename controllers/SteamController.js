@@ -53,7 +53,7 @@ class SteamController {
     async getSteamItemInfo(req, res) {
 
         try {
-            const { classid, instanceid } = req.query;
+            const { classid, instanceid } = req.body;
 
             const item = await this.steamService.fetchItemFromSteamAPI(classid, instanceid);
 

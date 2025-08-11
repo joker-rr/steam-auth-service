@@ -1,6 +1,7 @@
 const logger = require('../utils/logger');
 const cheerio = require('cheerio');
 
+
 class SteamService {
     constructor() {
         this.steamOpenIdUrl = 'https://steamcommunity.com/openid/login';

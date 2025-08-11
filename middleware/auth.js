@@ -92,7 +92,8 @@ const optionalApiKeyAuth = (req, res, next) => {
 // 🛡️ HMAC签名验证中间件
 const verifyHMACSignature = (req, res, next) => {
     const requestId = req.headers['x-request-id'] || 'unknown';
-
+    // 🔍 调试：打印所有请求头
+    console.log('🔍 所有请求头:', JSON.stringify(req.headers, null, 2));
     try {
         const {
             'x-server-id': serverId,
