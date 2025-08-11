@@ -6,6 +6,7 @@ class SteamService {
         this.steamOpenIdUrl = 'https://steamcommunity.com/openid/login';
         this.steamProfileUrl = 'https://steamcommunity.com/profiles/';
         this.steamApiUrl = 'https://api.steampowered.com';
+        this.STEAM_API_KEY = process.env.STEAM_API_KEY;
     }
 
     /**
