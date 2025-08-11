@@ -2,6 +2,7 @@ const express = require('express');
 const SteamController = require('../controllers/SteamController');
 const { asyncHandler } = require('../middleware/errorHandler');
 const { rateLimiters } = require('../middleware/rateLimiter');
+const { verifyHMACSignature } = require('../middleware/auth');
 
 
 const router = express.Router();
@@ -39,6 +40,7 @@ router.post('/user-info',
 
 // GET /api/steam/steamItem
 router.get('/steamItem',
+    verifyHMACSignature,
     asyncHandler(steamController.getSteamItemInfo.bind(steamController))
 );
 
